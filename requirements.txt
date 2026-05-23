@@ -1,0 +1,43 @@
+# ================================================================
+# EXACT 2026 — Requirements
+# Cài đặt: pip install -r requirements.txt
+#
+# Lưu ý bắt buộc TRƯỚC KHI cài:
+#   Ollama (LLM local) phải được cài riêng tại https://ollama.com
+#   Sau khi cài Ollama, chạy: ollama pull qwen2.5:7b
+# ================================================================
+
+
+# ── API Server ───────────────────────────────────────────────────
+fastapi>=0.110.0          # Framework REST API
+uvicorn>=0.27.0           # ASGI server để chạy FastAPI
+pydantic>=2.0.0           # Data validation cho request/response
+
+
+# ── LLM Client ───────────────────────────────────────────────────
+ollama>=0.1.7             # Python client gọi Ollama local (qwen2.5:7b)
+requests>=2.31.0          # HTTP requests (health check Ollama, RAG query)
+
+
+# ── Logic Solver ─────────────────────────────────────────────────
+z3-solver>=4.12.0         # Z3 theorem prover (Microsoft) — giải logic hình thức
+
+
+# ── Physics Solver ───────────────────────────────────────────────
+sympy>=1.12               # Symbolic math — tính toán công thức vật lý chính xác
+
+
+# ── RAG Pipeline ─────────────────────────────────────────────────
+langchain>=0.2.0                  # Core LangChain framework
+langchain-community>=0.2.0        # FAISS loader, HuggingFace embeddings
+langchain-core>=0.2.0             # Document schema, base classes
+langchain-text-splitters>=0.2.0   # RecursiveCharacterTextSplitter
+sentence-transformers>=2.7.0      # Embedding model: all-MiniLM-L6-v2 (~90 MB, tải lần đầu)
+faiss-cpu>=1.7.4                  # Vector database chạy local (CPU)
+torch>=2.0.0                      # PyTorch — sentence-transformers cần để chạy
+
+
+# ── Data Loading ─────────────────────────────────────────────────
+pandas>=2.0.0             # Đọc file Excel (.xlsx) và CSV
+openpyxl>=3.1.0           # Engine đọc/ghi file .xlsx cho pandas
+pypdf>=4.0.0              # Đọc file PDF (dùng trong RAG/step1_chunking.py)

@@ -1,0 +1,224 @@
+# PHÂN CÔNG NHIỆM VỤ — EXACT 2026
+# Nhóm 5 người | 3 tuần
+
+================================================================
+TỔNG QUAN DATASET
+================================================================
+Logic  : 411 entries, 808 câu hỏi (Yes/No + MCQ)
+         Đáp án: Unknown(80%), No(74% của Yes/No), A/B/C/D
+Physics: 1,755 bài toán vật lý
+         Loại: TD, LD, DT, NL, DD, QA, CH, TH
+
+================================================================
+BẠN — PROJECT MANAGER + TÍCH HỢP HỆ THỐNG
+================================================================
+File phụ trách: main.py
+
+TUẦN 1:
+  □ Dạy cả nhóm cài môi trường (Ollama + Python + thư viện)
+  □ Tạo GitHub repo, dạy git cơ bản (commit, push, pull)
+  □ Chia sẻ 2 file dataset cho cả nhóm
+  □ Giải thích cấu trúc dataset cho từng người
+
+TUẦN 2:
+  □ Tích hợp 4 module vào main.py
+  □ Chạy thử pipeline với 10 câu logic + 10 câu physics
+  □ Báo lỗi về cho từng người fix
+  □ Đảm bảo input/output giữa các module đúng format
+
+TUẦN 3:
+  □ Chạy toàn bộ 808 + 1755 câu, đo accuracy
+  □ Chuẩn bị file nộp bài đúng format EXACT
+  □ Viết báo cáo kỹ thuật cho ban tổ chức
+  □ Test lần cuối trước khi nộp
+
+Lệnh chạy hệ thống:
+  py main.py
+
+================================================================
+MEMBER 2 — CLASSIFIER (Phân loại & làm sạch dữ liệu)
+================================================================
+File phụ trách: modules/classifier.py
+
+NHIỆM VỤ CHÍNH:
+  □ Phân loại câu hỏi: yesno hay mcq
+  □ Dùng field "idx" lọc premises liên quan
+  □ Làm sạch 6 premises bị lỗi encoding
+  □ Xử lý cả Logic JSON và Physics CSV
+
+TUẦN 1 — Học:
+  □ Cài môi trường theo hướng dẫn README
+  □ Đọc kỹ 20 entry đầu của Logic dataset
+  □ Hiểu cấu trúc: idx, premises-NL, questions, answers
+  □ Phân tích tay 20 câu: loại nào, pattern gì
+
+TUẦN 2 — Xây:
+  □ Hoàn thiện classifier.py (đã có khung)
+  □ Test với 50 câu logic, đạt > 95% phân loại đúng
+  □ Xử lý Physics CSV: đọc đúng cột question/answer/unit
+
+TUẦN 3 — Hoàn thiện:
+  □ Fix lỗi từ feedback của PM
+  □ Đảm bảo output đúng format cho logic_solver và physics_solver
+
+Test chạy:
+  py modules/classifier.py
+
+Input/Output chuẩn:
+  Input:  1 entry từ JSON gốc (dict)
+  Output: list các dict với keys: type, question, premises, options, expected_answer
+
+================================================================
+MEMBER 3 — LOGIC SOLVER (Giải câu hỏi logic)
+================================================================
+File phụ trách: modules/logic_solver.py
+
+NHIỆM VỤ CHÍNH:
+  □ Giải câu Yes/No bằng LLM + kiểm tra logic
+  □ Giải câu MCQ, đặc biệt xử lý đáp án "Unknown"
+  □ Xử lý đúng 80% câu MCQ có đáp án Unknown
+
+LƯU Ý QUAN TRỌNG:
+  - 80% câu MCQ có đáp án "Unknown" → nếu bỏ qua sẽ mất 80% điểm
+  - 74% câu Yes/No có đáp án "No" → không được hardcode "Yes"
+  - Phải dùng temperature=0.0 để kết quả nhất quán
+
+TUẦN 1 — Học:
+  □ Cài môi trường + z3-solver
+  □ Học Z3 cơ bản (file z3_intro.py cũ)
+  □ Đọc 30 câu hỏi logic, hiểu FOL symbols: ∀∃¬→∧∨
+
+TUẦN 2 — Xây:
+  □ Hoàn thiện solve_yesno(): Yes/No/Unknown
+  □ Hoàn thiện solve_mcq(): A/B/C/D/Unknown
+  □ Test với 30 câu Yes/No (target: > 70% đúng)
+  □ Test với 30 câu MCQ (target: > 60% đúng)
+
+TUẦN 3 — Hoàn thiện:
+  □ Cải thiện prompt để nhận dạng Unknown tốt hơn
+  □ Thêm self-consistency: hỏi 3 lần, lấy đa số
+
+Test chạy:
+  py modules/logic_solver.py
+
+Input/Output chuẩn:
+  Input:  dict từ classifier (type, question, premises, options)
+  Output: {answer, confidence, reasoning}
+
+================================================================
+MEMBER 4 — PHYSICS SOLVER (Giải bài toán vật lý)
+================================================================
+File phụ trách: modules/physics_solver.py
+
+NHIỆM VỤ CHÍNH:
+  □ Giải 1,755 bài toán vật lý từ Physics dataset
+  □ Dùng SymPy cho tính toán chính xác
+  □ LLM đọc đề + trích xuất số liệu
+
+CÁC LOẠI BÀI TOÁN CẦN XỬ LÝ:
+  TD (177 bài) → Tụ điện:       W = 0.5 × C × U²
+  LD (399 bài) → Lực Coulomb:   F = k|q1q2|/r²
+  DT  (68 bài) → Điện trường:   E = k|q|/r²
+  NL (190 bài) → Năng lượng:    nhiều công thức khác nhau
+  DD (130 bài) → Điện từ:       B = μ₀nI, ...
+  QA (401 bài) → Quang/Dao động: nhiều công thức
+  CH (310 bài) → Chất lỏng/Nhiệt
+  TH  (80 bài) → Thí nghiệm
+
+TUẦN 1 — Học:
+  □ Cài môi trường + sympy
+  □ Học SymPy cơ bản (file sympy_circuit.py cũ)
+  □ Ôn công thức vật lý: Coulomb, điện trường, tụ điện
+  □ Đọc 20 bài mẫu trong Physics CSV
+
+TUẦN 2 — Xây:
+  □ Hoàn thiện các hàm solve_* cho từng loại bài
+  □ Hoàn thiện extract_and_solve_with_llm()
+  □ Test với 20 bài TD + 20 bài LD (target: > 70% đúng)
+
+TUẦN 3 — Hoàn thiện:
+  □ Mở rộng cho DD, QA, CH
+  □ Xử lý đơn vị: μF → F, cm → m, mC → C
+  □ Thêm kiểm tra kết quả hợp lý (sanity check)
+
+Test chạy:
+  py modules/physics_solver.py
+
+Input/Output chuẩn:
+  Input:  dict từ classifier (id, question, expected_answer, unit, cot_hint)
+  Output: {answer, unit, formula, given, steps}
+
+================================================================
+MEMBER 5 — EXPLAINER (Sinh giải thích chất lượng cao)
+================================================================
+File phụ trách: modules/explainer.py
+
+NHIỆM VỤ CHÍNH:
+  □ Sinh giải thích tự nhiên cho câu hỏi logic
+  □ Sinh giải thích từng bước cho bài toán vật lý
+  □ Tối ưu prompt để đạt explainability score cao nhất
+
+MỤC TIÊU CHẤT LƯỢNG:
+  - Explanation dài 40-70 từ
+  - Phải tham chiếu đúng số premise
+  - Format nhất quán: ANSWER / REASONING / CONCLUSION
+  - Không được bịa số, chỉ dùng số từ solution
+
+TUẦN 1 — Học:
+  □ Cài môi trường
+  □ Đọc kỹ 50 explanation mẫu trong dataset
+  □ Phân tích pattern: explanation tốt có gì?
+  □ Học 6 kỹ thuật Prompt Engineering
+
+TUẦN 2 — Xây:
+  □ Hoàn thiện explain_logic() với few-shot prompting
+  □ Hoàn thiện explain_physics() với few-shot prompting
+  □ A/B test: so sánh 3 phiên bản prompt khác nhau
+  □ Đo chất lượng: nhờ PM chạy và đánh giá
+
+TUẦN 3 — Hoàn thiện:
+  □ Tinh chỉnh dựa trên lỗi thực tế
+  □ Thêm FOL proof cho câu logic (bonus điểm!)
+  □ Đảm bảo format output 100% nhất quán
+
+Test chạy:
+  py modules/explainer.py
+
+Input/Output chuẩn:
+  Input:  question, q_type, solution (từ solver), premises
+  Output: string "ANSWER: ...\nREASONING: ...\nCONCLUSION: ..."
+
+================================================================
+TIMELINE 3 TUẦN
+================================================================
+
+         TUẦN 1 (Setup)    TUẦN 2 (Build)    TUẦN 3 (Polish)
+Bạn     Dạy nhóm          Tích hợp          Đo accuracy
+        GitHub setup       Debug             Nộp bài
+
+M2      Đọc dataset        classifier.py     Fix lỗi
+        Phân tích 20 câu   Test 50 câu       Optimize
+
+M3      Học Z3             logic_solver.py   Unknown handling
+        Đọc FOL            Test 60 câu       Self-consistency
+
+M4      Học SymPy          physics_solver.py Unit conversion
+        Ôn vật lý          Test 40 bài       Sanity check
+
+M5      Đọc explanation    explainer.py      FOL proof (bonus)
+        Học prompting      A/B test          Format nhất quán
+
+================================================================
+MỤC TIÊU ACCURACY
+================================================================
+Cuối Tuần 1: Cả 5 người chạy được test_llm.py ✓
+Cuối Tuần 2: 4 module hoạt động độc lập
+Cuối Tuần 3: Logic > 70% | Physics > 65% | Nộp bài
+
+================================================================
+LỆNH CÀI ĐẶT (cho tất cả thành viên)
+================================================================
+py -m venv venv
+venv\Scripts\activate
+py -m pip install ollama z3-solver sympy
+ollama pull qwen2.5:7b

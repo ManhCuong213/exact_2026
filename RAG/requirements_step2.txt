@@ -1,0 +1,13 @@
+# Bước 2 — Vector Database
+# Cài đặt: py -m pip install -r requirements_step2.txt
+
+# Từ Bước 1 (giữ nguyên)
+langchain>=0.2.0
+langchain-community>=0.2.0
+langchain-text-splitters>=0.2.0
+pypdf>=4.0.0
+
+# Mới cho Bước 2
+sentence-transformers>=2.7.0   # Tạo embeddings local (all-MiniLM-L6-v2)
+faiss-cpu>=1.7.4               # Vector Database chạy local
+torch>=2.0.0                   # sentence-transformers cần torch để chạy
